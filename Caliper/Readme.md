@@ -1,6 +1,7 @@
 This folder will have caliper examples files.
 
 ** Instruction : 
+0. Read : https://hyperledger.github.io/caliper/v0.5.0/fabric-tutorial/tutorials-fabric-existing/
 1. mkdir caliper-workspace
 2. cd caliper-workspace
 3. mkdir networks
