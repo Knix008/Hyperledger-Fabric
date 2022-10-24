@@ -12,7 +12,12 @@ const { Wallets, Gateway, wallet } = require('fabric-network');
 const path = require('path');
 const ccpPath = path.resolve(__dirname, 'connection-org1.json');
 const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
+const walletPath = path.join(process.cwd(), 'wallet');
 
+// Setting the REST API Server port.
+const port = process.env.PORT || 8080
+
+// The chaincode object.
 let contract;
 
 (async function(){
@@ -53,8 +58,7 @@ app.get('/api/queryallcars', async function (req, res) {
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);
         res.status(500).json({error: error});
-        process.exit(1);
-    }
+     }
 });
 
 app.get('/api/query/:car_index', async function (req, res) {
@@ -68,7 +72,6 @@ app.get('/api/query/:car_index', async function (req, res) {
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);
         res.status(500).json({error: error});
-        process.exit(1);
     }
 });
 
@@ -79,13 +82,10 @@ app.post('/api/addcar/', async function (req, res) {
         // changeCarOwner transaction - requires 2 args , ex: ('changeCarOwner', 'CAR10', 'Dave')
         await contract.submitTransaction('createCar', req.body.carid, req.body.make, req.body.model, req.body.colour, req.body.owner);
         console.log('Transaction has been submitted.');
-        res.send('Transaction has been submitted.\n');
-
-        // Disconnect from the gateway.
-        await gateway.disconnect();
+        res.status(200).send();
     } catch (error) {
         console.error(`Failed to submit transaction: ${error}`);
-        process.exit(1);
+        res.status(500).json({ error: error });
     }
 })
 
@@ -97,13 +97,28 @@ app.put('/api/changeowner/:car_index', async function (req, res) {
         await contract.submitTransaction('changeCarOwner', req.params.car_index, req.body.owner);
         console.log('Transaction has been submitted.');
         res.send('Transaction has been submitted.\n');
-
-        // Disconnect from the gateway.
-        await gateway.disconnect();
     } catch (error) {
         console.error(`Failed to submit transaction: ${error}`);
-        process.exit(1);
+        res.status(500).json({ error: error });
     }	
 })
 
-app.listen(8080);
+// custom 404 page
+app.use((req, res) => {
+    console.log("Cannot find web page!!!")
+    res.type('text/plain')
+    res.status(404)
+    res.send('404 - Not Found')
+})
+
+// custom 500 page
+app.use((err, req, res, next) => {
+    console.error(err.message)
+    res.type('text/plain')
+    res.status(500)
+    res.send('500 - Server Error')
+})
+
+app.listen(port, () => console.log(
+    `REST API Server started on http://localhost:${port};\n` +
+    `Press Ctrl-C to terminate.`))
