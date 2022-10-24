@@ -106,8 +106,6 @@ app.post('/api/addcar/', async function (req, res) {
             return;
         }
 
-        console.log('connection profile : ' + ccpPath);
-
         // Create a new gateway for connecting to our peer node.
         const gateway = new Gateway();
         await gateway.connect(ccp, { wallet, identity: 'appUser', discovery: { enabled: true, asLocalhost: true } });
